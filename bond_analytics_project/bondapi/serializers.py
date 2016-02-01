@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from models import Bond
+from bondapi.models import Bond
 
 
 class BondSerializer(serializers.HyperlinkedModelSerializer):

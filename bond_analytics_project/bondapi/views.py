@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
 
-from models import Bond
-from serializers import BondSerializer
+from bondapi.models import Bond
+from bondapi.serializers import BondSerializer
 
 
 class BondViewSet(ModelViewSet):
