@@ -1,3 +1,4 @@
+import numpy as np
 from django.db import models
 
 
@@ -25,8 +26,12 @@ class Bond(models.Model):
     name = models.CharField(max_length=128)
     face_value = models.DecimalField(max_digits=20, decimal_places=2)
     annual_coupon_rate = models.DecimalField(max_digits=5, decimal_places=4)
+    annual_required_return = models.DecimalField(max_digits=5, decimal_places=4)
     annual_payment_frequency = models.IntegerField()
-    annual_interest = models.DecimalField(max_digits=10, decimal_places=4)
+
+    semi_annual_coupon_payment = models.DecimalField(max_digits=10, decimal_places=4)
+    bond_price = models.DecimalField(max_digits=10, decimal_places=4)
+    bond_valuation = models.DecimalField(max_digits=10, decimal_places=4)
 
     issue_date = models.DateField()
     settlement_date = models.DateField()
@@ -34,13 +39,27 @@ class Bond(models.Model):
     term_to_maturity = models.DecimalField(max_digits=6, decimal_places=2)
 
     def save(self, *args, **kwargs):
+        # Bond valuation computations
         self.term_to_maturity = self.calculate_term_to_maturity()
-        self.annual_interest = self.calculate_annual_interest()
+        self.semi_annual_coupon_payment = self.calculate_semi_annual_coupon_payment()
+        self.bond_price = self.calculate_bond_price()
+        self.bond_valuation = self.bond_price * 10
+
         super(Bond, self).save(*args, **kwargs)
 
     def calculate_term_to_maturity(self):
         days_to_maturity = (self.maturity_date - self.settlement_date)
         return days_to_maturity.days / 365
 
-    def calculate_annual_interest(self):
-        return self.annual_coupon_rate * self.face_value / 2
+    def calculate_semi_annual_coupon_payment(self):
+        return self.face_value * self.annual_coupon_rate / self.annual_payment_frequency
+
+    def calculate_bond_price(self):
+        present_value = np.pv(
+            rate=(self.annual_required_return / self.annual_payment_frequency),
+            nper=(self.term_to_maturity * self.annual_payment_frequency),
+            pmt=(self.semi_annual_coupon_payment),
+            fv=(self.face_value)
+        )
+
+        return -0.1 * present_value
