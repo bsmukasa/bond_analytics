@@ -14,5 +14,8 @@ class BondSerializer(serializers.HyperlinkedModelSerializer):
             'annual_payment_frequency',
             'issue_date',
             'settlement_date',
-            'maturity_date'
+            'maturity_date',
+            'term_to_maturity'
         )
+
+    term_to_maturity = serializers.ReadOnlyField()

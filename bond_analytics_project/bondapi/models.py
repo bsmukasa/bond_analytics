@@ -17,6 +17,7 @@ class Bond(models.Model):
         issue_date: The date the bond was issued.
         settlement_date: The date the bond is purchased.
         maturity_date: The date the bond matures.
+        term_to_maturity: The number of years before the bond matures.
 
     """
     name = models.CharField(max_length=128)
@@ -27,3 +28,9 @@ class Bond(models.Model):
     issue_date = models.DateField()
     settlement_date = models.DateField()
     maturity_date = models.DateField()
+    term_to_maturity = models.DecimalField(max_digits=6, decimal_places=2)
+
+    def save(self, *args, **kwargs):
+        days_to_maturity = (self.maturity_date - self.settlement_date)
+        self.term_to_maturity = days_to_maturity.days / 365
+        super(Bond, self).save(*args, **kwargs)
