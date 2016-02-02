@@ -12,6 +12,8 @@ class BondSerializer(serializers.HyperlinkedModelSerializer):
             'face_value',
             'annual_coupon_rate',
             'annual_payment_frequency',
+            'annual_interest',
+
             'issue_date',
             'settlement_date',
             'maturity_date',
@@ -19,3 +21,4 @@ class BondSerializer(serializers.HyperlinkedModelSerializer):
         )
 
     term_to_maturity = serializers.ReadOnlyField()
+    annual_interest = serializers.ReadOnlyField()
