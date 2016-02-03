@@ -24,18 +24,19 @@ class BondViewSet(ModelViewSet):
             valuation_date = datetime.strptime(string_date, "%Y-%m-%d").date()
             maturity_period_elapsed = self._get_elapsed_fraction_of_period(bond, valuation_date)
 
+            periods_to_maturity = bond.term_to_maturity * bond.annual_payment_frequency
             dirty_price = self._get_dirty_price(bond, maturity_period_elapsed)
             accrued_interest = self._get_accrued_interest(bond, maturity_period_elapsed)
             clean_price = self._get_clean_price(accrued_interest, dirty_price)
 
 
             return Response({
-                'bond_name': bond.name,
+                'bond_id': bond.id,
                 'bond_valuation_date': valuation_date,
                 'bond_settlement_date': bond.settlement_date,
                 'bond_maturity_date': bond.maturity_date,
-                'elapsed_period': maturity_period_elapsed,
-                'bond_term_to_maturity': bond.term_to_maturity,
+                'periods_to_maturity': periods_to_maturity,
+                'maturity_period_elapsed': maturity_period_elapsed,
                 'dirty_price': dirty_price,
                 'accrued_interest': accrued_interest,
                 'clean_price': clean_price,
