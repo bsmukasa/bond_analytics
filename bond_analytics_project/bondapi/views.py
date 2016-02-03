@@ -24,9 +24,9 @@ class BondViewSet(ModelViewSet):
             valuation_date = datetime.strptime(string_date, "%Y-%m-%d").date()
             maturity_period_elapsed = self._get_elapsed_fraction_of_period(bond, valuation_date)
 
-            dirty_price = float(bond.bond_valuation) * float((1 + bond.annual_required_return / bond.annual_payment_frequency)) ** maturity_period_elapsed
-            accrued_interest = maturity_period_elapsed * float(bond.annual_coupon_rate / bond.annual_payment_frequency * bond.face_value)
-            clean_price = dirty_price - accrued_interest
+            dirty_price = self._get_dirty_price(bond, maturity_period_elapsed)
+            accrued_interest = self._get_accrued_interest(bond, maturity_period_elapsed)
+            clean_price = self._get_clean_price(accrued_interest, dirty_price)
 
 
             return Response({
@@ -42,6 +42,17 @@ class BondViewSet(ModelViewSet):
             })
         else:
             raise Http404
+
+    def _get_clean_price(self, accrued_interest, dirty_price):
+        return dirty_price - accrued_interest
+
+    def _get_accrued_interest(self, bond, maturity_period_elapsed):
+        return maturity_period_elapsed * float(
+            bond.annual_coupon_rate / bond.annual_payment_frequency * bond.face_value)
+
+    def _get_dirty_price(self, bond, maturity_period_elapsed):
+        return float(bond.bond_valuation) * float(
+            (1 + bond.annual_required_return / bond.annual_payment_frequency)) ** maturity_period_elapsed
 
     def _get_elapsed_fraction_of_period(self, bond, valuation_date):
         seconds_elapsed = valuation_date - bond.settlement_date
