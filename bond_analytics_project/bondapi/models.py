@@ -76,9 +76,8 @@ class BondValuation:  # models.Model
     # dirty_price = models.DecimalField(max_digits=20, decimal_places=4)
     # accrued_interest = models.DecimalField(max_digits=10, decimal_places=4)
     # clean_price = models.DecimalField(max_digits=20, decimal_places=4)
-    def __init__(self, bond, bond_id, elapsed_time, valuation_date):
+    def __init__(self, bond, elapsed_time, valuation_date):
         self.bond = bond
-        self.bond_id = bond_id
         self.valuation_date = self._calculate_valuation_date(valuation_date, elapsed_time)
         self.maturity_period_elapsed = self._calculate_maturity_periods_elapsed(elapsed_time)
         self.periods_to_maturity = float(bond.term_to_maturity * bond.annual_payment_frequency)

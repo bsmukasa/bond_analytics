@@ -8,6 +8,7 @@ class BondSerializer(serializers.HyperlinkedModelSerializer):
         model = Bond
         fields = (
             'url',
+            'id',
             'name',
             'face_value',
             'annual_coupon_rate',
@@ -37,8 +38,7 @@ class BondValuationSerializer(serializers.Serializer):
     def update(self, instance, validated_data):
         pass
 
-    bond_id = serializers.IntegerField()
-
+    bond = BondSerializer()
     valuation_date = serializers.DateField()
     periods_to_maturity = serializers.IntegerField()
     maturity_period_elapsed = serializers.FloatField()
