@@ -39,10 +39,12 @@ class Bond(models.Model):
     settlement_date = models.DateField()
     maturity_date = models.DateField()
     term_to_maturity = models.DecimalField(max_digits=6, decimal_places=2)
+    periods_to_maturity = models.DecimalField(max_digits=6, decimal_places=2)
 
     def save(self, *args, **kwargs):
         # Bond valuation computations
         self.term_to_maturity = self.calculate_term_to_maturity()
+        self.periods_to_maturity = self.term_to_maturity * self.annual_payment_frequency
         self.semi_annual_coupon_payment = self.calculate_semi_annual_coupon_payment()
         self.bond_price = self.calculate_bond_price()
         self.bond_valuation = self.bond_price * 10
@@ -68,33 +70,17 @@ class Bond(models.Model):
         return -0.1 * present_value
 
 
-class BondValuation:  # models.Model
-    # bond = models.ForeignKey(Bond)
-    # valuation_date = models.DateField()
-    # maturity_period_elapsed = models.IntegerField()
-    # periods_to_maturity = models.IntegerField()
-    # dirty_price = models.DecimalField(max_digits=20, decimal_places=4)
-    # accrued_interest = models.DecimalField(max_digits=10, decimal_places=4)
-    # clean_price = models.DecimalField(max_digits=20, decimal_places=4)
+class BondValuation:
     def __init__(self, bond, elapsed_time, valuation_date):
         self.bond = bond
         self.valuation_date = self._calculate_valuation_date(valuation_date, elapsed_time)
         self.maturity_period_elapsed = self._calculate_maturity_periods_elapsed(elapsed_time)
-        self.periods_to_maturity = float(bond.term_to_maturity * bond.annual_payment_frequency)
+        # self.periods_to_maturity = float(bond.term_to_maturity * bond.annual_payment_frequency)
         self.dirty_price = self._calculate_dirty_price()
         self.accrued_interest = self._calculate_accrued_interest()
         self.clean_price = self._calculate_clean_price()
 
     DAYS_PER_YEAR = 364.2425
-
-    # def save(self, request=False, *args, **kwargs):
-    #
-    #     self.valuation_date = self._calculate_valuation_date(valuation_date, elapsed_time)
-    #     self.maturity_period_elapsed = self._calculate_maturity_periods_elapsed(elapsed_time)
-    #     self.periods_to_maturity = float(self.bond.term_to_maturity * self.bond.annual_payment_frequency)
-    #     self.dirty_price = self._calculate_dirty_price()
-    #     self.accrued_interest = self._calculate_accrued_interest()
-    #     self.clean_price = self._calculate_clean_price()
 
     def _calculate_valuation_date(self, valuation_date, elapsed_time):
         if valuation_date is None:

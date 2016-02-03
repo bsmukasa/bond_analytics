@@ -22,9 +22,11 @@ class BondSerializer(serializers.HyperlinkedModelSerializer):
             'issue_date',
             'settlement_date',
             'maturity_date',
-            'term_to_maturity'
+            'term_to_maturity',
+            'periods_to_maturity',
         )
 
+    periods_to_maturity = serializers.ReadOnlyField()
     term_to_maturity = serializers.ReadOnlyField()
     semi_annual_coupon_payment = serializers.ReadOnlyField()
     bond_price = serializers.ReadOnlyField()
@@ -40,7 +42,7 @@ class BondValuationSerializer(serializers.Serializer):
 
     bond = BondSerializer()
     valuation_date = serializers.DateField()
-    periods_to_maturity = serializers.IntegerField()
+    # periods_to_maturity = serializers.IntegerField()
     maturity_period_elapsed = serializers.FloatField()
     dirty_price = serializers.FloatField()
     accrued_interest = serializers.FloatField()
