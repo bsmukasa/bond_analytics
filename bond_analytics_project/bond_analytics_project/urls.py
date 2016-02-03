@@ -34,4 +34,9 @@ urlpatterns = [
         regex=r'^',
         view=include(router.urls)
     ),
+    #
+    # url(
+    #     regex=r'^bond_valuation_by_date/(?P<pk>[0-9]+)/$',
+    #     view=BondValuationOnDateDetail.as_view()
+    # ),
 ]
