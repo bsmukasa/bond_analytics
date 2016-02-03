@@ -22,14 +22,20 @@ class BondViewSet(ModelViewSet):
 
         if string_date is not None:
             valuation_date = datetime.strptime(string_date, "%Y-%m-%d").date()
-            fraction_of_period_elapsed = self._get_elapsed_fraction_of_period(bond, valuation_date)
+            maturity_period_elapsed = self._get_elapsed_fraction_of_period(bond, valuation_date)
+
+            dirty_price = float(bond.bond_valuation) * float((1 + bond.annual_required_return / bond.annual_payment_frequency)) ** maturity_period_elapsed
+
+
 
             return Response({
                 'bond_name': bond.name,
                 'bond_valuation_date': valuation_date,
                 'bond_settlement_date': bond.settlement_date,
                 'bond_maturity_date': bond.maturity_date,
-                'elapsed_period': fraction_of_period_elapsed,
+                'elapsed_period': maturity_period_elapsed,
+                'bond_term_to_maturity': bond.term_to_maturity,
+                'dirty_price': dirty_price,
             })
         else:
             raise Http404
@@ -37,9 +43,12 @@ class BondViewSet(ModelViewSet):
     def _get_elapsed_fraction_of_period(self, bond, valuation_date):
         seconds_elapsed = valuation_date - bond.settlement_date
         years_elapsed = seconds_elapsed.days / 365
-        fraction_of_period_elapsed = years_elapsed / bond.annual_payment_frequency
+        fraction_of_years_elapsed = years_elapsed * bond.annual_payment_frequency
 
-        return fraction_of_period_elapsed
+        original_periods_to_maturity = bond.term_to_maturity * bond.annual_payment_frequency
+        elapsed_periods = fraction_of_years_elapsed * bond.annual_payment_frequency
+
+        return elapsed_periods
 
 # class BondValuationOnDateDetail(APIView):
 #
