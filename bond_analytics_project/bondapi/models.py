@@ -1,3 +1,5 @@
+import datetime
+
 import numpy as np
 from django.db import models
 
@@ -54,12 +56,55 @@ class Bond(models.Model):
     def calculate_semi_annual_coupon_payment(self):
         return self.face_value * self.annual_coupon_rate / self.annual_payment_frequency
 
+    # noinspection PyTypeChecker
     def calculate_bond_price(self):
         present_value = np.pv(
-            rate=(self.annual_required_return / self.annual_payment_frequency),
-            nper=(self.term_to_maturity * self.annual_payment_frequency),
-            pmt=(self.semi_annual_coupon_payment),
-            fv=(self.face_value)
+            rate=self.annual_required_return / self.annual_payment_frequency,
+            nper=self.term_to_maturity * self.annual_payment_frequency,
+            pmt=self.semi_annual_coupon_payment,
+            fv=self.face_value
         )
 
         return -0.1 * present_value
+
+
+class BondValuation:
+    DAYS_PER_YEAR = 364.2425
+
+    def __init__(self, bond, bond_id, elapsed_time, valuation_date):
+        self.bond = bond
+        self.bond_id = bond_id
+        self.valuation_date = self._calculate_valuation_date(valuation_date, elapsed_time)
+        self.maturity_period_elapsed = self._calculate_maturity_periods_elapsed(elapsed_time)
+        self.periods_to_maturity = float(bond.term_to_maturity * bond.annual_payment_frequency)
+        self.dirty_price = self._calculate_dirty_price()
+        self.accrued_interest = self._calculate_accrued_interest()
+        self.clean_price = self._calculate_clean_price()
+
+    def _calculate_valuation_date(self, valuation_date, elapsed_time):
+        if valuation_date is None:
+            from_date = self.bond.settlement_date
+            valuation_date = from_date + datetime.timedelta(days=(elapsed_time * self.DAYS_PER_YEAR))
+
+        return valuation_date
+
+    def _calculate_maturity_periods_elapsed(self, elapsed_time):
+        maturity_periods_elapsed = elapsed_time
+        if maturity_periods_elapsed is None:
+            seconds_elapsed = self.valuation_date - self.bond.settlement_date
+            years_elapsed = seconds_elapsed.days / self.DAYS_PER_YEAR
+            fraction_of_years_elapsed = years_elapsed * self.bond.annual_payment_frequency
+            maturity_periods_elapsed = fraction_of_years_elapsed * self.bond.annual_payment_frequency
+
+        return maturity_periods_elapsed
+
+    def _calculate_clean_price(self):
+        return self.dirty_price - self.accrued_interest
+
+    def _calculate_accrued_interest(self):
+        return self.maturity_period_elapsed * float(
+            self.bond.annual_coupon_rate / self.bond.annual_payment_frequency * self.bond.face_value)
+
+    def _calculate_dirty_price(self):
+        return float(self.bond.bond_valuation) * float(
+            (1 + self.bond.annual_required_return / self.bond.annual_payment_frequency)) ** self.maturity_period_elapsed

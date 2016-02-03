@@ -28,3 +28,19 @@ class BondSerializer(serializers.HyperlinkedModelSerializer):
     semi_annual_coupon_payment = serializers.ReadOnlyField()
     bond_price = serializers.ReadOnlyField()
     bond_valuation = serializers.ReadOnlyField()
+
+
+class BondValuationSerializer(serializers.Serializer):
+    def create(self, validated_data):
+        pass
+
+    def update(self, instance, validated_data):
+        pass
+
+    bond_id = serializers.IntegerField()
+    valuation_date = serializers.DateField()
+    periods_to_maturity = serializers.IntegerField()
+    maturity_period_elapsed = serializers.FloatField()
+    dirty_price = serializers.FloatField()
+    accrued_interest = serializers.FloatField()
+    clean_price = serializers.FloatField()
