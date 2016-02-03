@@ -38,6 +38,7 @@ class BondValuationSerializer(serializers.Serializer):
         pass
 
     bond_id = serializers.IntegerField()
+
     valuation_date = serializers.DateField()
     periods_to_maturity = serializers.IntegerField()
     maturity_period_elapsed = serializers.FloatField()

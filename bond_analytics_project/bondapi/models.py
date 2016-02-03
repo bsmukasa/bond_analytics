@@ -68,9 +68,14 @@ class Bond(models.Model):
         return -0.1 * present_value
 
 
-class BondValuation:
-    DAYS_PER_YEAR = 364.2425
-
+class BondValuation:  # models.Model
+    # bond = models.ForeignKey(Bond)
+    # valuation_date = models.DateField()
+    # maturity_period_elapsed = models.IntegerField()
+    # periods_to_maturity = models.IntegerField()
+    # dirty_price = models.DecimalField(max_digits=20, decimal_places=4)
+    # accrued_interest = models.DecimalField(max_digits=10, decimal_places=4)
+    # clean_price = models.DecimalField(max_digits=20, decimal_places=4)
     def __init__(self, bond, bond_id, elapsed_time, valuation_date):
         self.bond = bond
         self.bond_id = bond_id
@@ -80,6 +85,17 @@ class BondValuation:
         self.dirty_price = self._calculate_dirty_price()
         self.accrued_interest = self._calculate_accrued_interest()
         self.clean_price = self._calculate_clean_price()
+
+    DAYS_PER_YEAR = 364.2425
+
+    # def save(self, request=False, *args, **kwargs):
+    #
+    #     self.valuation_date = self._calculate_valuation_date(valuation_date, elapsed_time)
+    #     self.maturity_period_elapsed = self._calculate_maturity_periods_elapsed(elapsed_time)
+    #     self.periods_to_maturity = float(self.bond.term_to_maturity * self.bond.annual_payment_frequency)
+    #     self.dirty_price = self._calculate_dirty_price()
+    #     self.accrued_interest = self._calculate_accrued_interest()
+    #     self.clean_price = self._calculate_clean_price()
 
     def _calculate_valuation_date(self, valuation_date, elapsed_time):
         if valuation_date is None:
