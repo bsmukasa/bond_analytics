@@ -25,7 +25,8 @@ class BondViewSet(ModelViewSet):
             maturity_period_elapsed = self._get_elapsed_fraction_of_period(bond, valuation_date)
 
             dirty_price = float(bond.bond_valuation) * float((1 + bond.annual_required_return / bond.annual_payment_frequency)) ** maturity_period_elapsed
-
+            accrued_interest = maturity_period_elapsed * float(bond.annual_coupon_rate / bond.annual_payment_frequency * bond.face_value)
+            clean_price = dirty_price - accrued_interest
 
 
             return Response({
@@ -36,6 +37,8 @@ class BondViewSet(ModelViewSet):
                 'elapsed_period': maturity_period_elapsed,
                 'bond_term_to_maturity': bond.term_to_maturity,
                 'dirty_price': dirty_price,
+                'accrued_interest': accrued_interest,
+                'clean_price': clean_price,
             })
         else:
             raise Http404

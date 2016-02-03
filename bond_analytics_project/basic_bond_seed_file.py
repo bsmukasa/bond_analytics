@@ -10,7 +10,7 @@ from bondapi.models import Bond
 test_bond_list = [
     dict(name='test_ppt_bond', face_value=1000, annual_interest=25, annual_coupon_rate=0.08,
          annual_required_return=0.095, issue_date=datetime.date(1978, 1, 16),
-         settlement_date=datetime.date(2007, 1, 16), maturity_date=datetime.date(2010, 1, 16),
+         settlement_date=datetime.date(2007, 3, 16), maturity_date=datetime.date(2010, 3, 16),
          term_to_maturity=3, bond_price=99.76, bond_valuation=972.23),
 
     dict(name='test_bond_1', face_value=1000, annual_interest=27.5 * 2, annual_coupon_rate=0.055,

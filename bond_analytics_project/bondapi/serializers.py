@@ -25,7 +25,6 @@ class BondSerializer(serializers.HyperlinkedModelSerializer):
         )
 
     term_to_maturity = serializers.ReadOnlyField()
-    annual_interest = serializers.ReadOnlyField()
     semi_annual_coupon_payment = serializers.ReadOnlyField()
     bond_price = serializers.ReadOnlyField()
     bond_valuation = serializers.ReadOnlyField()
