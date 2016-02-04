@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from bondapi.models import Bond
+from bondapi.models import Bond, BondValuationTimeSeries
 
 
 class BondSerializer(serializers.HyperlinkedModelSerializer):
@@ -47,3 +47,13 @@ class BondValuationSerializer(serializers.Serializer):
     dirty_price = serializers.FloatField()
     accrued_interest = serializers.FloatField()
     clean_price = serializers.FloatField()
+
+
+class BondValuationTimeSeriesSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = BondValuationTimeSeries
+        fields = (
+            'bond',
+        )
+
+        bond = BondSerializer()

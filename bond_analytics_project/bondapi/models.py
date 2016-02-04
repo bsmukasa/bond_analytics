@@ -109,3 +109,7 @@ class BondValuation:
     def _calculate_dirty_price(self):
         return float(self.bond.bond_valuation) * float(
             (1 + self.bond.annual_required_return / self.bond.annual_payment_frequency)) ** self.maturity_period_elapsed
+
+
+class BondValuationTimeSeries(models.Model):
+    bond = models.ForeignKey(Bond)
