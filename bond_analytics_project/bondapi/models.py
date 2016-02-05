@@ -1,7 +1,11 @@
+import collections
 import datetime
 
 import numpy as np
 from django.db import models
+from jsonfield import JSONField
+
+DAYS_PER_YEAR = 364.2425
 
 
 class Bond(models.Model):
@@ -41,6 +45,13 @@ class Bond(models.Model):
     term_to_maturity = models.DecimalField(max_digits=6, decimal_places=2)
     periods_to_maturity = models.DecimalField(max_digits=6, decimal_places=2)
 
+    def __str__(self):
+        return '{}'.format(self.name)
+
+    @property
+    def valuation_timeseries(self):
+        return None
+
     def save(self, *args, **kwargs):
         # Bond valuation computations
         self.term_to_maturity = self.calculate_term_to_maturity()
@@ -51,9 +62,12 @@ class Bond(models.Model):
 
         super(Bond, self).save(*args, **kwargs)
 
+        timeseries = BondValuationTimeSeries(bond_id=self.id)
+        timeseries.save()
+
     def calculate_term_to_maturity(self):
         days_to_maturity = (self.maturity_date - self.settlement_date)
-        return days_to_maturity.days / 365
+        return days_to_maturity.days / DAYS_PER_YEAR
 
     def calculate_semi_annual_coupon_payment(self):
         return self.face_value * self.annual_coupon_rate / self.annual_payment_frequency
@@ -71,21 +85,20 @@ class Bond(models.Model):
 
 
 class BondValuation:
-    def __init__(self, bond, elapsed_time, valuation_date):
+    def __init__(self, bond, elapsed_time=None, valuation_date=None):
         self.bond = bond
         self.valuation_date = self._calculate_valuation_date(valuation_date, elapsed_time)
         self.maturity_period_elapsed = self._calculate_maturity_periods_elapsed(elapsed_time)
-        # self.periods_to_maturity = float(bond.term_to_maturity * bond.annual_payment_frequency)
         self.dirty_price = self._calculate_dirty_price()
         self.accrued_interest = self._calculate_accrued_interest()
         self.clean_price = self._calculate_clean_price()
 
-    DAYS_PER_YEAR = 364.2425
-
-    def _calculate_valuation_date(self, valuation_date, elapsed_time):
+    def _calculate_valuation_date(self, valuation_date, elapsed_maturity_periods):
         if valuation_date is None:
             from_date = self.bond.settlement_date
-            valuation_date = from_date + datetime.timedelta(days=(elapsed_time * self.DAYS_PER_YEAR))
+            valuation_date = from_date + datetime.timedelta(
+                days=(elapsed_maturity_periods / self.bond.annual_payment_frequency * DAYS_PER_YEAR)
+            )
 
         return valuation_date
 
@@ -93,7 +106,7 @@ class BondValuation:
         maturity_periods_elapsed = elapsed_time
         if maturity_periods_elapsed is None:
             seconds_elapsed = self.valuation_date - self.bond.settlement_date
-            years_elapsed = seconds_elapsed.days / self.DAYS_PER_YEAR
+            years_elapsed = seconds_elapsed.days / DAYS_PER_YEAR
             fraction_of_years_elapsed = years_elapsed * self.bond.annual_payment_frequency
             maturity_periods_elapsed = fraction_of_years_elapsed * self.bond.annual_payment_frequency
 
@@ -112,4 +125,29 @@ class BondValuation:
 
 
 class BondValuationTimeSeries(models.Model):
-    bond = models.ForeignKey(Bond)
+    bond = models.ForeignKey(Bond, related_name='timeseries')
+    timeseries = JSONField(load_kwargs={'object_pairs_hook': collections.OrderedDict}, null=True)
+
+    def save(self, *args, **kwargs):
+        valuation_list = self._create_period_valuations()
+        self.timeseries = valuation_list
+
+        return super(BondValuationTimeSeries, self).save(*args, **kwargs)
+
+    def _create_period_valuations(self):
+        valuation_list = []
+        periods_to_maturity = int(float(self.bond.periods_to_maturity))
+
+        for elapsed_time in range(periods_to_maturity + 1):
+            period_valuation = BondValuation(self.bond, elapsed_time)
+
+            json_period_valuation = {
+                'valuation_date': period_valuation.valuation_date,
+                'maturity__period_elapsed': period_valuation.maturity_period_elapsed,
+                'dirty_price': period_valuation.dirty_price,
+                'accrued_interest': period_valuation.accrued_interest,
+                'clean_price': period_valuation.clean_price,
+            }
+            valuation_list.append(json_period_valuation)
+
+        return valuation_list

@@ -8,7 +8,7 @@ admin.autodiscover()
 
 router = routers.DefaultRouter()
 router.register(r'bond', BondViewSet)
-router.register(r'bond_valuation_timeseries', BondValuationTimeSeriesViewSet)
+router.register(r'timeseries', BondValuationTimeSeriesViewSet, 'timeseries')
 
 urlpatterns = [
     url(

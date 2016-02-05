@@ -6,7 +6,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bond_analytics_project.settings')
 django.setup()
 
-from bondapi.models import Bond
+from bondapi.models import Bond, BondValuationTimeSeries
 
 test_bond_list = [
     dict(name='test_ppt_bond', face_value=1000, annual_interest=25, annual_coupon_rate=0.08,
@@ -37,6 +37,7 @@ test_bond_list = [
 if __name__ == '__main__':
     print('Resetting database.')
     Bond.objects.all().delete()
+    BondValuationTimeSeries.objects.all().delete()
 
     print('Starting seeding.')
     for bond in test_bond_list:
