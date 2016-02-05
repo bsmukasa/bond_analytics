@@ -17,5 +17,6 @@ class BondAdmin(admin.ModelAdmin):
         'issue_date',
         'settlement_date',
         'maturity_date',
-        'term_to_maturity'
+        'term_to_maturity',
+        'periods_to_maturity',
     ]

@@ -5,8 +5,8 @@ from rest_framework.decorators import detail_route
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from bondapi.models import Bond, BondValuation
-from bondapi.serializers import BondSerializer, BondValuationSerializer
+from bondapi.models import Bond, BondValuation, BondValuationTimeSeries
+from bondapi.serializers import BondSerializer, BondValuationSerializer, BondValuationTimeSeriesSerializer
 
 
 class BondViewSet(ModelViewSet):
@@ -32,3 +32,8 @@ class BondViewSet(ModelViewSet):
         valuation_serializer = BondValuationSerializer(bond_valuation, context={'request': request})
 
         return Response(valuation_serializer.data)
+
+
+class BondValuationTimeSeriesViewSet(ModelViewSet):
+    serializer_class = BondValuationTimeSeriesSerializer
+    queryset = BondValuationTimeSeries.objects.all()
